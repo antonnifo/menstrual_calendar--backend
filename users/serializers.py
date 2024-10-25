@@ -1,5 +1,7 @@
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import CustomUser
+from django.contrib.auth import authenticate
 
 class CustomUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -20,3 +22,44 @@ class CustomUserSerializer(serializers.ModelSerializer):
                                               password=validated_data['password']
                                             )
         return user
+    
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def get_token(cls, user):
+        token = super().get_token(user)
+        
+        #Adding additional user information
+        token['first_name'] = user.first_name
+        token['last_name'] = user.last_name
+        token['email'] = user.email
+        token['phone_number'] = user.phone_number,
+        token['gender'] = user.gender,
+        token['birth_date'] = user.birth_date
+        
+        return token
+    
+    def validate(self, attrs):
+        # Override the username to use email
+        username = attrs.get('email')
+        password = attrs.get('password')
+        
+        user = authenticate(request=self.context.get('request'), username=username, password=password)
+        
+        if not user:
+            raise Exception('No active account found with the given credentials')
+        
+        data = super().validate(attrs)
+        
+        # Add additional response data
+        data.update({
+            'user': {
+                'id': self.user.id,
+                'first_name': self.user.first_name,
+                'last_name': self.user.last_name,
+                'email': self.user.email,
+                'phone_number': self.user.phone_number,
+                'gender': self.user.gender,
+                'birth_date': self.user.birth_date,
+            }
+        })
+        
+        return data
