@@ -8,7 +8,8 @@ from rest_framework.response import Response
 from rest_framework import generics, status
 # from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny
-from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.views import TokenVerifyView
+from rest_framework_simplejwt.serializers import TokenVerifySerializer
 
 # Create your views here.
 class UserSignupView(generics.CreateAPIView):
@@ -37,43 +38,7 @@ class UserSignupView(generics.CreateAPIView):
             }
         }
 
-        return Response(response_data, status=status.HTTP_201_CREATED)
-    
-# class CustomTokenObtainPairView(TokenObtainPairView):
-#     serializer_class = CustomTokenObtainPairSerializer
-    
-# class UserLoginView(APIView):
-#     """
-#     handling user login.
-#     """
-#     # Allow anyone to access this view
-#     permission_classes = [AllowAny]
-    
-#     def post(self, request, *args, **kwargs):
-#         email = request.data.get('email')
-#         password = request.data.get('password')
-
-#         user = authenticate(request, email=email, password=password)
-#         if user is not None:
-#             login(request, user)
-
-#             token, created = Token.objects.get_or_create(user=user)
-
-#             response_data = {
-#                 'token': token.key,
-#                 'user': {
-#                     'id': user.id,
-#                     'first_name': user.first_name,
-#                     'last_name': user.last_name,
-#                     'email': user.email,
-#                     'phone_number': user.phone_number,
-#                     'gender': user.gender,
-#                     'birth_date': user.birth_date,
-#                 }
-#             }
-#             return Response(response_data, status=status.HTTP_200_OK)
-#         else:
-#             return Response({'error': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(response_data, status=status.HTTP_201_CREATED)  
         
 class UserLogoutView(APIView):
     """
@@ -151,5 +116,17 @@ class UserDeleteView(generics.DestroyAPIView):
         return Response({
             'message': 'User successfully deleted'
         }, status=status.HTTP_200_OK)
+        
+class CustomTokenVerifyView(TokenVerifyView):
+    serializer_class = TokenVerifySerializer
+    
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        
+        try:
+            serializer.is_valid(raise_exception=True)
+            return Response({"message: Access token is valid"}, status=status.HTTP_200_OK)
+        except Exception:
+            return Response({"message: Access token is invalid"}, status=status.HTTP_401_UNAUTHORIZED)
 
 
