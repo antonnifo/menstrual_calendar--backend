@@ -1,7 +1,7 @@
 from .models import CustomUser
 from rest_framework.decorators import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import CustomTokenObtainPairSerializer, CustomUserSerializer
+from .serializers import CustomUserSerializer
 from rest_framework.permissions import IsAuthenticated
 #from django.contrib.auth import authenticate, login, logout
 from rest_framework.response import Response
@@ -39,8 +39,8 @@ class UserSignupView(generics.CreateAPIView):
 
         return Response(response_data, status=status.HTTP_201_CREATED)
     
-class CustomTokenObtainPairView(TokenObtainPairView):
-    serializer_class = CustomTokenObtainPairSerializer
+# class CustomTokenObtainPairView(TokenObtainPairView):
+#     serializer_class = CustomTokenObtainPairSerializer
     
 # class UserLoginView(APIView):
 #     """
