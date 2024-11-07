@@ -1,12 +1,11 @@
+from django.http import Http404
 from .models import CustomUser
 from rest_framework.decorators import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import CustomUserSerializer
 from rest_framework.permissions import IsAuthenticated
-#from django.contrib.auth import authenticate, login, logout
 from rest_framework.response import Response
 from rest_framework import generics, status
-# from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.views import TokenVerifyView
 from rest_framework_simplejwt.serializers import TokenVerifySerializer
@@ -22,23 +21,26 @@ class UserSignupView(generics.CreateAPIView):
     permission_classes = [AllowAny]
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
+        try:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            user = serializer.save()
 
-        # Generate JWT tokens that is access and refresh tokens
-        refresh = RefreshToken.for_user(user)
-        access = refresh.access_token
+            # Generate JWT tokens that is access and refresh tokens
+            refresh = RefreshToken.for_user(user)
+            access = refresh.access_token
 
-        response_data = {
-            'user': serializer.data,
-            'tokens': {
-                'access': str(access),
-                'refresh': str(refresh),
+            response_data = {
+                'user': serializer.data,
+                'tokens': {
+                    'access': str(access),
+                    'refresh': str(refresh),
+                }
             }
-        }
 
-        return Response(response_data, status=status.HTTP_201_CREATED)  
+            return Response(response_data, status=status.HTTP_201_CREATED)  
+        except Exception:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
 class UserLogoutView(APIView):
     """
@@ -66,11 +68,21 @@ class UserDetailView(generics.RetrieveAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
     permission_classes = [IsAuthenticated]
+    
+    def get_object(self):
+        user_id = self.kwargs.get('id')
+        try:
+            return CustomUser.objects.get(id=user_id)
+        except CustomUser.DoesNotExist:
+            raise Http404('User not Found')
 
     def get(self, request, *args, **kwargs):
-        # Returns the current logged-in user's data
-        serializer = self.get_serializer(request.user)
-        return Response(serializer.data)
+        try:
+            instance = self.get_object()
+            serializer = self.get_serializer(request.user)
+            return Response(serializer.data)
+        except CustomUser.DoesNotExist:
+            return Response({"message: User Does not Exist"}, status=status.HTTP_404_NOT_FOUND)
 
 # Edit User View
 class UserEditView(generics.UpdateAPIView):
@@ -82,21 +94,30 @@ class UserEditView(generics.UpdateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
-        return self.request.user  # Only allow editing the current logged-in user
+        user_id = self.kwargs.get('id')
+        try:
+            return CustomUser.objects.get(id=user_id)
+        except CustomUser.DoesNotExist:
+            raise Http404("User not found")
     
     def update(self, request, *args, **kwargs):
-        partial = kwargs.pop('partial', False) # Allow partial updates (PATCH requests)
-        instance = self.get_object()
-        
-        # Get the serializer with tset_passwordhe instance (current user)
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-        
-        return Response({
-            'message':'User credentials successfully updated',
-            'user': serializer.data
-        }, status=status.HTTP_200_OK)
+        try:
+            partial = kwargs.pop('partial', False) # Allow partial updates (PATCH requests)
+            instance = self.get_object()
+            
+            # Get the serializer with tset_passwordhe instance (current user)
+            serializer = self.get_serializer(instance, data=request.data, partial=partial)
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
+            
+            return Response({
+                'message':'User credentials successfully updated',
+                'user': serializer.data
+            }, status=status.HTTP_200_OK)
+        except Exception:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except CustomUser.DoesNotExist:
+            return Response({"message: User Does not Exist"}, status=status.HTTP_404_NOT_FOUND)
 
 # Delete User View
 class UserDeleteView(generics.DestroyAPIView):
@@ -107,16 +128,24 @@ class UserDeleteView(generics.DestroyAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
-        return self.request.user
+        user_id = self.kwargs.get('id')
+        try:
+            return CustomUser.objects.get(id=user_id)
+        except CustomUser.DoesNotExist:
+            raise Http404("User not found")
     
     def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        self.perform_destroy(instance)
-        
-        return Response({
-            'message': 'User successfully deleted'
-        }, status=status.HTTP_200_OK)
-        
+        try:
+            instance = self.get_object()
+            self.perform_destroy(instance)
+            
+            return Response({
+                'message': 'User successfully deleted'
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Exception({"error:": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+#Veryfing access tokens        
 class CustomTokenVerifyView(TokenVerifyView):
     serializer_class = TokenVerifySerializer
     
@@ -127,6 +156,6 @@ class CustomTokenVerifyView(TokenVerifyView):
             serializer.is_valid(raise_exception=True)
             return Response({"message: Access token is valid"}, status=status.HTTP_200_OK)
         except Exception:
-            return Response({"message: Access token is invalid"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"message: Invalid Access Token."}, status=status.HTTP_401_UNAUTHORIZED)
 
 
