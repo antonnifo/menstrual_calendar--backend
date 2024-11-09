@@ -44,6 +44,7 @@ INSTALLED_APPS = [
 
     #custom Apps
     'users',
+    'cycles',
 ]
 
 REST_FRAMEWORK = {
