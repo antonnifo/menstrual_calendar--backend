@@ -6,8 +6,11 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['id', 'first_name', 'middle_name', 'last_name' ,'email', 'phone_number','gender', 'birth_date', 'date_joined', 'password']
-        extra_kwargs = {'date_joined': {'read_only': True}} 
+        fields = ['id', 'user_id','first_name', 'middle_name', 'last_name' ,'email', 'phone_number','gender', 'birth_date', 'date_joined', 'password']
+        extra_kwargs = {
+            'date_joined': {'read_only': True},
+            'user_id': {'read_only': True}
+        } 
 
     def create(self, validated_data):
         user = CustomUser.objects.create_user(email=validated_data['email'], 

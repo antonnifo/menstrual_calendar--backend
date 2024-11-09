@@ -68,14 +68,8 @@ class UserDetailView(generics.RetrieveAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
     permission_classes = [IsAuthenticated]
+    lookup_field = 'user_id'
     
-    def get_object(self):
-        user_id = self.kwargs.get('id')
-        try:
-            return CustomUser.objects.get(id=user_id)
-        except CustomUser.DoesNotExist:
-            raise Http404('User not Found')
-
     def get(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
@@ -92,14 +86,8 @@ class UserEditView(generics.UpdateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
     permission_classes = [IsAuthenticated]
-
-    def get_object(self):
-        user_id = self.kwargs.get('id')
-        try:
-            return CustomUser.objects.get(id=user_id)
-        except CustomUser.DoesNotExist:
-            raise Http404("User not found")
-    
+    lookup_field = 'user_id'
+ 
     def update(self, request, *args, **kwargs):
         try:
             partial = kwargs.pop('partial', False) # Allow partial updates (PATCH requests)
@@ -126,13 +114,7 @@ class UserDeleteView(generics.DestroyAPIView):
     """
     queryset = CustomUser.objects.all()
     permission_classes = [IsAuthenticated]
-
-    def get_object(self):
-        user_id = self.kwargs.get('id')
-        try:
-            return CustomUser.objects.get(id=user_id)
-        except CustomUser.DoesNotExist:
-            raise Http404("User not found")
+    lookup_field = 'user_id'
     
     def destroy(self, request, *args, **kwargs):
         try:
