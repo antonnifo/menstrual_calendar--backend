@@ -8,6 +8,7 @@ class Cycles(models.Model):
     period_end = models.DateField()
     fertile_start = models.DateField()
     fertile_end = models.DateField()
+    ovulation = models.DateField()
     predicted_period_start = models.DateField()
     predicted_period_end = models.DateField()
     created_at = models.DateTimeField(auto_now_add=True)
