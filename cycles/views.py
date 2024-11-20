@@ -57,7 +57,7 @@ class UserCycleListView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
-        user_id = self.kwargs.get('user_id')
+        user_id = self.request.query_params.get('user_id')
         user = get_object_or_404(CustomUser, user_id=user_id)
         return Cycles.objects.filter(user=user)
     
