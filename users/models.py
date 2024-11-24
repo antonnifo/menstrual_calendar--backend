@@ -1,7 +1,7 @@
 from django.utils import timezone
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
-import uuid
+from uuid import uuid4
 
 # Create your models here.
 class CustomUserManager(BaseUserManager):
@@ -33,7 +33,7 @@ class CustomUserManager(BaseUserManager):
     
 class CustomUser(AbstractUser):
     username = None
-    user_id = models.CharField(max_length=32, unique=True, default=uuid.uuid4)
+    user_id = models.UUIDField(editable=False, unique=True)
     first_name = models.CharField(max_length=30)
     middle_name = models.CharField(max_length=30, blank=True, null=True)
     last_name = models.CharField(max_length=30)
@@ -47,6 +47,11 @@ class CustomUser(AbstractUser):
     REQUIRED_FIELDS = ['first_name', 'last_name']
 
     objects = CustomUserManager()
+    
+    def save(self, *args, **kwargs):
+        if not self.user_id:
+            self.user_id = uuid4()
+        super().save(*args, **kwargs) 
 
     def __str__(self):
         return self.email

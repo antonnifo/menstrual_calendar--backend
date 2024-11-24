@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-knzkj7(_j!3pfe*8_v(6+k=dg$r1))gn+)r_$wnzyg*@dxrlsp
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -103,10 +103,19 @@ WSGI_APPLICATION = 'menstrual_calendar.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+import os
+from dotenv import load_dotenv
+
+load_dotenv()  # Load .env file
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': os.getenv('DB_ENGINE', 'django.db.backends.mysql'),
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST', '127.0.0.1'),
+        'PORT': os.getenv('DB_PORT', '3307'),
     }
 }
 
