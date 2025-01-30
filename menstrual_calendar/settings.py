@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     #custom Apps
     'users',
     'cycles',
+    'logs',
 ]
 
 REST_FRAMEWORK = {
@@ -115,6 +116,7 @@ DATABASES = {
         'PORT': config('DATABASE_PORT'),
     }
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
