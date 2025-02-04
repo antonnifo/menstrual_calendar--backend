@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     #custom Apps
     'users',
     'cycles',
+    'logs',
 ]
 
 REST_FRAMEWORK = {
@@ -59,8 +60,8 @@ REST_FRAMEWORK = {
 from datetime import timedelta
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=5),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': True, #enabling token blacklisting
     'ALGORITHM': 'HS256',
@@ -115,6 +116,7 @@ DATABASES = {
         'PORT': config('DATABASE_PORT'),
     }
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
